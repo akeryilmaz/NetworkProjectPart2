@@ -79,6 +79,9 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets, window_mutex, packet_mutex):
                 current_window -= d_ack - expected_ack + 1
                 expected_ack = d_ack + 1
                 timer_running = False
+            if d_ack > packet_index:
+                with packet_mutex:
+                    packet_index = d_ack
         else:
             print(int(round(time.time() * 1000)) - bad_ack_time)
             if not timer_running:
