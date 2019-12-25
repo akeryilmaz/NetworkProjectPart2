@@ -16,14 +16,14 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
         while True:
             # Listen for incoming packets.
             packet, address = UDPServerSocket.recvfrom(1024)
-            header = packet[:3]
+            header = packet[:4]
             current_key = int.from_bytes(header, byteorder="big")
 
             # key -1 means thread is finished
             if current_key == -1:
                 break
 
-            payload = packet[3:] 
+            payload = packet[4:] 
             received_packets[current_key] = payload 
 
             if current_key > key_max:
