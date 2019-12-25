@@ -7,7 +7,6 @@ def UDPServer(localIP, localPort, packetQueue_DS, packetQueue_SD):
     # Create UDP Server socket and bind local IP & port to it.
     UDPServerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     UDPServerSocket.bind((localIP, localPort))
-    UDPServerSocket.setblocking(False)
     print("UDP Server on IP {} is ready.".format(localIP))
     while True:
         # Listen for incoming packets from s.
