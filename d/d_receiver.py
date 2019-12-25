@@ -11,7 +11,7 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
         print("UDP_RDT_Server Server on IP {} is ready.".format(localIP))
 
         received_packets = {}
-        last_key = -1
+        key_max = -1
 
         while True:
             # Listen for incoming packets.
@@ -25,11 +25,13 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
 
             payload = packet[3:] 
             received_packets[current_key] = payload 
-            last_key = current_key
+
+            if current_key > key_max:
+                key_max = current_key
         
         file_content = b''
         with open(file_name,"wb") as file: 
-            for key in range(last_key):
+            for key in range(key_max+1):
                 file.write(received_packets[key])
 
 
