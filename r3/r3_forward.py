@@ -8,7 +8,9 @@ def UDPServer(localIP, localPort, packetQueue_DS, packetQueue_SD):
     UDPServerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     UDPServerSocket.bind((localIP, localPort))
     print("UDP Server on IP {} is ready.".format(localIP))
-    t = threading.Thread(target=SSender, args=(UDPServerSocket, packetQueue_DS))
+    messageFromS, address = UDPServerSocket.recvfrom(1024)
+    packetQueue_SD.put(messageFromS)
+    t = threading.Thread(target=SSender, args=(UDPServerSocket, address, packetQueue_DS))
     while True:
         packetQueue_SD.put(UDPServerSocket.recv(1024))
     t.join()
@@ -27,9 +29,9 @@ def DReceiver(DSocket, packetQueue_DS):
     while True:
         packetQueue_DS.put(DSocket.recv(1024))
 
-def SSender(SSocket, packetQueue_DS):
+def SSender(SSocket, address, packetQueue_DS):
     while True:
-        SSocket.send(packetQueue_DS.get())
+        SSocket.sendto(packetQueue_DS.get(), address)
 
 if __name__ == "__main__":
     destinations = {'s' : "10.10.3.1", 'd': "10.10.7.1"}
