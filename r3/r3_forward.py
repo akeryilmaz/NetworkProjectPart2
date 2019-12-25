@@ -8,29 +8,28 @@ def UDPServer(localIP, localPort, packetQueue_DS, packetQueue_SD):
     UDPServerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     UDPServerSocket.bind((localIP, localPort))
     print("UDP Server on IP {} is ready.".format(localIP))
+    t = threading.Thread(target=SSender, args=(UDPServerSocket, packetQueue_DS))
     while True:
-        # Listen for incoming packets from s.
-        messageFromS, address = UDPServerSocket.recvfrom(1024)
-        # Put the packet into queue for sender thread to send these packets.
-        packetQueue_SD.put(messageFromS)
-        # From the queue, get the feedback packet coming from d.
-        # messageFromD = packetQueue_DS.get()
-        # Send the feedback packet back to s
-        # UDPServerSocket.sendto(messageFromD, address)
-
+        packetQueue_SD.put(UDPServerSocket.recv(1024))
+    t.join()
 
 def UDPClient(remoteIP, remotePort, packetQueue_DS, packetQueue_SD):
     # Create UDP Client socket
     UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     remoteIPPort = (remoteIP, remotePort)
+    t = threading.Thread(target=DReceiver, args=(UDPClientSocket, packetQueue_DS))
+    t.start()
     while True:
-        # Get messages from packetQueue_SD one by one and send it to remoteIP, remotePort.
-        messageFromS = packetQueue_SD.get()
-        UDPClientSocket.sendto(messageFromS, remoteIPPort)
-        # Receive the feedback packet from d.
-        # messageFromD = UDPClientSocket.recv(1024)
-        # Put it in the queue.
-        # packetQueue_DS.put(messageFromD)
+        UDPClientSocket.sendto(packetQueue_SD.get(), remoteIPPort)
+    t.join()
+
+def DReceiver(DSocket, packetQueue_DS):
+    while True:
+        packetQueue_DS.put(DSocket.recv(1024))
+
+def SSender(SSocket, packetQueue_DS):
+    while True:
+        SSocket.send(packetQueue_DS.get())
 
 if __name__ == "__main__":
     destinations = {'s' : "10.10.3.1", 'd': "10.10.7.1"}
