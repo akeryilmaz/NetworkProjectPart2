@@ -24,7 +24,7 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
                 break
 
             payload = packet[3:] 
-            received_packets[key] = payload 
+            received_packets[current_key] = payload 
             last_key = current_key
         
         file_content = b''
