@@ -11,6 +11,7 @@ def UDPServer(localIP, localPort, packetQueue_DS, packetQueue_SD):
     messageFromS, address = UDPServerSocket.recvfrom(1024)
     packetQueue_SD.put(messageFromS)
     t = threading.Thread(target=SSender, args=(UDPServerSocket, address, packetQueue_DS))
+    t.start()
     while True:
         packetQueue_SD.put(UDPServerSocket.recv(1024))
     t.join()
@@ -23,6 +24,7 @@ def UDPClient(remoteIP, remotePort, packetQueue_DS, packetQueue_SD):
     t.start()
     while True:
         UDPClientSocket.sendto(packetQueue_SD.get(), remoteIPPort)
+        print("Sent to D")
     t.join()
 
 def DReceiver(DSocket, packetQueue_DS):
@@ -32,6 +34,7 @@ def DReceiver(DSocket, packetQueue_DS):
 def SSender(SSocket, address, packetQueue_DS):
     while True:
         SSocket.sendto(packetQueue_DS.get(), address)
+        print("Sent to S")
 
 if __name__ == "__main__":
     destinations = {'s' : "10.10.3.1", 'd': "10.10.7.1"}
