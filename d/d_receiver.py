@@ -20,7 +20,7 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
             print(header)
             
             # key -1 means thread is finished
-            if header == b"\00\00":
+            if header == b"\x00\x00\x00\x00":
                 break
 
             current_key = int.from_bytes(header, byteorder="big")  
