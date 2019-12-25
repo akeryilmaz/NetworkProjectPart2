@@ -6,8 +6,12 @@ import struct
 
 WINDOW_SIZE = 30
 TIME_OUT_INTERVAL = 40
+current_window = 0
+packet_index = 1
 
 def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
+    global packet_index
+    global current_window
     if experimentNo==1:
         # Create socket for sending packets to server.
         UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -24,11 +28,9 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
                 packets.append(header.to_bytes(4, byteorder='big') + payload)
                 header += 1
 
-        current_window = 0
-        packet_index = 1
         packet_mutex = threading.Lock()
         window_mutex = threading.Lock()
-        t = threading.Thread(target=UDP_RDT_Listen_Ack, args=(UDPClientSocket, current_window, packet_index, window_mutex, packet_mutex))
+        t = threading.Thread(target=UDP_RDT_Listen_Ack, args=(UDPClientSocket, window_mutex, packet_mutex))
         t.start()
 
         while True:
@@ -38,7 +40,7 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
                 packet = packets[packet_index-1]
                 # Send the packet
                 n_bytes = UDPClientSocket.sendto(packet, serverAddressPort)
-                print("Packet sent:", packet_index)
+                print("Packet sent:", packet_index, current_window)
                 packet_index += 1
                 with window_mutex:
                     current_window += 1
@@ -55,8 +57,10 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
 
     t.join()
 
-def UDP_RDT_Listen_Ack(DSocket, current_window, packet_index, window_mutex, packet_mutex):
-    expected_ack = 1
+def UDP_RDT_Listen_Ack(DSocket, window_mutex, packet_mutex):
+    global packet_index
+    global current_window
+    expected_ack = 2
     timer_running = False
     while True:
         d_ack = int.from_bytes(DSocket.recv(1024), byteorder="big")
@@ -76,7 +80,7 @@ def UDP_RDT_Listen_Ack(DSocket, current_window, packet_index, window_mutex, pack
                 with window_mutex:
                     current_window -= d_ack - expected_ack + 1
                     expected_ack = d_ack + 1
-
+        print("Current window:", current_window)
 
 if __name__ == "__main__":
     # Create UDPClient and start sending messages.
