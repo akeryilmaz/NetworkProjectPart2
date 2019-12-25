@@ -17,6 +17,7 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
             # Listen for incoming packets.
             packet, address = UDPServerSocket.recvfrom(1024)
             header = packet[:4]
+            print(header)
             
             # key -1 means thread is finished
             if header == b"\00\00":
