@@ -6,12 +6,16 @@ import struct
 
 WINDOW_SIZE = 30
 TIME_OUT_INTERVAL = 40
+
 current_window = 0
 packet_index = 1
+finished = False
 
 def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
     global packet_index
     global current_window
+    global finished
+
     if experimentNo==1:
         # Create socket for sending packets to server.
         UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -45,6 +49,7 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
                 with window_mutex:
                     current_window += 1
             else:
+                finished = True
                 break
             
         # Send finish
@@ -62,9 +67,11 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
 def UDP_RDT_Listen_Ack(DSocket, window_mutex, packet_mutex):
     global packet_index
     global current_window
+    global finished
+
     expected_ack = 2
     timer_running = False
-    while True:
+    while not finished:
         d_ack = int.from_bytes(DSocket.recv(1024), byteorder="big")
         print("Ack received: ", d_ack)
         if d_ack >= expected_ack:
