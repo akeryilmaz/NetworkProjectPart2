@@ -8,7 +8,7 @@ import struct
 def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
     if experimentNo==1:
 
-        header = 0
+        header = 1
         packets = []
         # Create packets with incresing headers of 2 bytes.
         with open(file_name,"rb") as f:
@@ -30,7 +30,7 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
             packetsSent += 1
             
         # Send finish
-        finPacket = b"\xff\xff"
+        finPacket = b"\00\00"
         UDPClientSocket.sendto(finPacket, serverAddressPort)
         
     elif experimentNo == 2:

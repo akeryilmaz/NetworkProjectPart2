@@ -30,7 +30,7 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
         
         file_content = b''
         with open(file_name,"wb") as f: 
-            for key in range(key_max+1):
+            for key in range(1, key_max+1):
                 f.write(received_packets[key])
 
 
