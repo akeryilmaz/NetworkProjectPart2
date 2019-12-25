@@ -14,10 +14,16 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
         key_max = -1
         #ack is the header of the packet expected.
         ack = 1
+        timer_running = False
 
         while True:
             # Listen for incoming packets.
-            packet, address = UDPServerSocket.recvfrom(1024)
+            try:
+                packet, address = UDPServerSocket.recvfrom(1024)
+                UDPServerSocket.settimeout(0.3)
+            except socket.timeout:
+                UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
+                print("Timeout, sent ACK:", ack)
             header = packet[:4]
             current_key = int.from_bytes(header, byteorder="big")  
             
@@ -28,6 +34,8 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
             elif current_key != ack:
                 UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
                 print("Unexpected, sent ACK:", ack)
+                
+
             # Expected packet, accept
             else:
                 ack += 1
