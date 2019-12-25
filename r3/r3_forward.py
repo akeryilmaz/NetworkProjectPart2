@@ -23,7 +23,6 @@ def UDPClient(remoteIP, remotePort, packetQueue_DS, packetQueue_SD):
     while True:
         # Get messages from packetQueue_SD one by one and send it to remoteIP, remotePort.
         messageFromS = packetQueue_SD.get()
-        UDPClientSocket.sendto(messageFromS, remoteIPPort)
 
 if __name__ == "__main__":
     destinations = {'s' : "10.10.3.1", 'd': "10.10.7.1"}
