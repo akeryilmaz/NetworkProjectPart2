@@ -36,7 +36,7 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
         while True:
             if current_window>=WINDOW_SIZE:
                 continue
-            else:
+            elif packet_index<=len(packets):
                 packet = packets[packet_index-1]
                 # Send the packet
                 n_bytes = UDPClientSocket.sendto(packet, serverAddressPort)
@@ -44,6 +44,8 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
                 packet_index += 1
                 with window_mutex:
                     current_window += 1
+            else:
+                break
             
         # Send finish
         fin = 0
