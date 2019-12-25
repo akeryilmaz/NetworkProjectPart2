@@ -34,10 +34,10 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
 
         packet_mutex = threading.Lock()
         window_mutex = threading.Lock()
-        t = threading.Thread(target=UDP_RDT_Listen_Ack, args=(UDPClientSocket, window_mutex, packet_mutex))
+        t = threading.Thread(target=UDP_RDT_Listen_Ack, args=(UDPClientSocket, len(packets), window_mutex, packet_mutex))
         t.start()
 
-        while True:
+        while not finished:
             if current_window>=WINDOW_SIZE:
                 continue
             elif packet_index<=len(packets):
@@ -48,9 +48,6 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
                 packet_index += 1
                 with window_mutex:
                     current_window += 1
-            else:
-                finished = True
-                break
             
         # Send finish
         fin = 0
@@ -64,14 +61,14 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
 
     t.join()
 
-def UDP_RDT_Listen_Ack(DSocket, window_mutex, packet_mutex):
+def UDP_RDT_Listen_Ack(DSocket, n_packets, window_mutex, packet_mutex):
     global packet_index
     global current_window
     global finished
 
     expected_ack = 2
     timer_running = False
-    while not finished:
+    while True:
         d_ack = int.from_bytes(DSocket.recv(1024), byteorder="big")
         print("Ack received: ", d_ack)
         if d_ack >= expected_ack:
@@ -79,6 +76,9 @@ def UDP_RDT_Listen_Ack(DSocket, window_mutex, packet_mutex):
                 current_window -= d_ack - expected_ack + 1
                 expected_ack = d_ack + 1
                 timer_running = False
+        elif d_ack == n_packets:
+            finished = True
+            break
         else:
             if not timer_running:
                 bad_ack_time = int(round(time.time() * 1000))
