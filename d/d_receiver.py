@@ -24,7 +24,7 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
                 break
 
             current_key = int.from_bytes(header, byteorder="big")  
-            payload = packet[4:] 
+            payload = packet[2:] 
             received_packets[current_key] = payload 
             if current_key > key_max:
                 key_max = current_key
