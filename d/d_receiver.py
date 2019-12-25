@@ -33,7 +33,7 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
             # Not expected packet, reject
             elif current_key != ack:
                 UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
-                print("Unexpected, sent ACK:", ack)
+                print("Unexpected,currentkey:",current_key, "sent ACK:", ack)
                 
 
             # Expected packet, accept
