@@ -16,7 +16,7 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
                 payload = f.read(997)
                 if not payload:
                     break
-                packets.append(header.to_bytes(3, byteorder='big') + payload)
+                packets.append(header.to_bytes(4, byteorder='big') + payload)
                 header += 1
 
         serverAddressPort = (serverIP, serverPort)
@@ -30,8 +30,7 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
             packetsSent += 1
             
         # Send finish
-        number = -1
-        finPacket = number.to_bytes(3, byteorder='big')
+        finPacket = b"\xff\xff"
         UDPClientSocket.sendto(finPacket, serverAddressPort)
         
     elif experimentNo == 2:
