@@ -29,6 +29,7 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
             
             # key 0 means thread is finished
             if current_key == 0:
+                UDPServerSocket.sendto(current_key.to_bytes(4, byteorder='big'), address)
                 break
             # Not expected packet, reject
             elif current_key != ack:

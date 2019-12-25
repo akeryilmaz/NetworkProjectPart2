@@ -48,11 +48,21 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
                 packet_index += 1
                 with window_mutex:
                     current_window += 1
-            
-        # Send finish
-        fin = 0
-        finPacket = fin.to_bytes(4, byteorder='big')
-        UDPClientSocket.sendto(finPacket, serverAddressPort)
+
+        while True:
+            # Send finish
+            fin = 0
+            finPacket = fin.to_bytes(4, byteorder='big')
+            UDPClientSocket.sendto(finPacket, serverAddressPort)
+            UDPClientSocket.settimeout(0.3)
+            try:
+                packet, address = UDPClientSocket.recvfrom(1024)
+            except socket.timeout:
+                continue
+            packet = int.from_bytes(packet, byteorder="big")  
+            if packet == 0:
+                break
+
         
     elif experimentNo == 2:
         pass
