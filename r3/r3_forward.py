@@ -23,6 +23,7 @@ def UDPClient(remoteIP, remotePort, packetQueue_DS, packetQueue_SD):
     # Create UDP Client socket
     UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     remoteIPPort = (remoteIP, remotePort)
+    print("UDP Client is ready.")
     while True:
         # Get messages from packetQueue_SD one by one and send it to remoteIP, remotePort.
         messageFromS = packetQueue_SD.get()
