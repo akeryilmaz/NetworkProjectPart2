@@ -12,6 +12,8 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
 
         received_packets = {}
         key_max = -1
+        #ack is the header of the packet expected.
+        ack = 1
 
         while True:
             # Listen for incoming packets.
@@ -19,16 +21,21 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
             header = packet[:4]
             current_key = int.from_bytes(header, byteorder="big")  
             
-            # key -1 means thread is finished
+            # key 0 means thread is finished
             if current_key == 0:
                 break
+            # Not expected packet, reject
+            elif current_key != ack:
+                UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
+            # Expected packet, accept
+            else:
+                ack += 1
+                payload = packet[4:] 
+                received_packets[current_key] = payload 
+                if current_key > key_max:
+                    key_max = current_key
+                UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
 
-            payload = packet[4:] 
-            received_packets[current_key] = payload 
-            if current_key > key_max:
-                key_max = current_key
-        
-        file_content = b''
         with open(file_name,"wb") as f: 
             for key in range(1, key_max+1):
                 f.write(received_packets[key])
