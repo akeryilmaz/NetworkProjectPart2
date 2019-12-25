@@ -4,8 +4,8 @@ import threading
 import sys
 import struct
 
-WINDOW_SIZE = 30
-TIME_OUT_INTERVAL = 40
+WINDOW_SIZE = 10
+TIME_OUT_INTERVAL = 20
 
 current_window = 0
 packet_index = 1
