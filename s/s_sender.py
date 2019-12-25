@@ -30,7 +30,7 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
             packetsSent += 1
             
         # Send finish
-        finPacket = b"\00\00"
+        finPacket = b"\x00\x00\x00\x00"
         UDPClientSocket.sendto(finPacket, serverAddressPort)
         
     elif experimentNo == 2:
