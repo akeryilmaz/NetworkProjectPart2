@@ -70,7 +70,6 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets, window_mutex, packet_mutex):
     timer_running = False
     while True:
         d_ack = int.from_bytes(DSocket.recv(1024), byteorder="big")
-        print("Ack received: ", d_ack)
         if d_ack == n_packets + 1:
             finished = True
             break
