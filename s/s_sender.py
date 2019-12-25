@@ -11,9 +11,9 @@ def UDP_RDT_Client(serverIP, serverPort, experimentNo, file_name):
         header = 0
         packets = []
         # Create packets with incresing headers of 2 bytes.
-        with open(file_name,"rb") as file:
+        with open(file_name,"rb") as f:
             while 1:
-                payload = file.read(997)
+                payload = f.read(997)
                 if not payload:
                     break
                 packets.append(header.to_bytes(3, byteorder='big') + payload)
