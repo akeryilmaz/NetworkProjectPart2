@@ -8,7 +8,6 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
         # Create UDP Server socket and bind local IP & port to it.
         UDPServerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         UDPServerSocket.bind((localIP, localPort))
-        UDPServerSocket.settimeout(0.3)
         print("UDP_RDT_Server Server on IP {} is ready.".format(localIP))
 
         received_packets = {}
@@ -21,6 +20,7 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
             # Listen for incoming packets.
             try:
                 packet, address = UDPServerSocket.recvfrom(1024)
+                UDPServerSocket.settimeout(0.3)
             except socket.timeout:
                 UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
                 print("Timeout, sent ACK:", ack)
