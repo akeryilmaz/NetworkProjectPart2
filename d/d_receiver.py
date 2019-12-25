@@ -27,6 +27,7 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
             # Not expected packet, reject
             elif current_key != ack:
                 UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
+                print("Unexpected, sent ACK:", ack)
             # Expected packet, accept
             else:
                 ack += 1
@@ -35,6 +36,7 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
                 if current_key > key_max:
                     key_max = current_key
                 UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
+                print("Sent ACK:", ack)
 
         with open(file_name,"wb") as f: 
             for key in range(1, key_max+1):
