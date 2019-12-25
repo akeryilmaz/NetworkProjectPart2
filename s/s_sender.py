@@ -68,6 +68,7 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets, window_mutex, packet_mutex):
 
     expected_ack = 2
     timer_running = False
+    bad_ack_time = 99999999999999999
     while True:
         d_ack = int.from_bytes(DSocket.recv(1024), byteorder="big")
         if d_ack == n_packets + 1:
@@ -79,15 +80,21 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets, window_mutex, packet_mutex):
                 expected_ack = d_ack + 1
                 timer_running = False
         else:
+            print(int(round(time.time() * 1000)) - bad_ack_time)
             if not timer_running:
                 bad_ack_time = int(round(time.time() * 1000))
                 timer_running = True
             elif int(round(time.time() * 1000)) - bad_ack_time > TIME_OUT_INTERVAL:
+                print("CHANGING VARIABLES")
                 with packet_mutex:
                     packet_index = d_ack
                 with window_mutex:
-                    current_window -= d_ack - expected_ack + 1
+                    current_window = 0
                     expected_ack = d_ack + 1
+                print("PACKET INDEX:", packet_index)
+                print("EXPECTED ACK:", expected_ack)
+                print("CURRENT WINDOW:", current_window)
+                timer_running = False
 
 if __name__ == "__main__":
     # Create UDPClient and start sending messages.
