@@ -60,6 +60,7 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
     prev_ack = 0
     dup_count = 0
     last_ack_received = {R1_ADDRESS:0, R2_ADDRESS:0, R3_ADDRESS:0}
+    down_flag = {R1_ADDRESS:False, R2_ADDRESS:False, R3_ADDRESS:False}
 
     while True:
         packet, address = DSocket.recvfrom(1024)
@@ -67,8 +68,11 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
         last_ack_received[address] = time.time()
 
         for address in last_ack_received:
+            if down_flag[address]:
+                continue
             if time.time() - last_ack_received[address] > LINK_FAILURE_TIMEOUT:
                 WINDOW_SIZES[address] = 0
+                print(address[0], "is DOWN!!!11!!!!11!")
 
         if d_ack == n_packets + 1:
             finished = True
