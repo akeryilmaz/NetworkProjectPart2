@@ -3,17 +3,6 @@ import time
 import threading
 import sys
 
-received_packets = {}
-mutex = threading.Lock()
-key_max = -1
-ack = 1
-finished = False
-started = False
-r1_count = 0
-r2_count = 0
-r3_count = 0
-socket_dict = {}
-
 def UDP_RDT_Server(localIP, localPort):
     global key_max
     global received_packets
@@ -67,33 +56,51 @@ def gap_check():
 if __name__ == "__main__":
     # Start listening for messages coming from r3 as a UDPServer.
     experiment_no = sys.argv[1]
-    if experiment_no == "1":
-        t1 = threading.Thread(target=UDP_RDT_Server, args=("10.10.7.1", 4444))
-        t2 = threading.Thread(target=ACKHandler)
-        t1.start()
-        t2.start()
-        t1.join()
-        t2.join()
-    elif experiment_no == "2":
-        t1 = threading.Thread(target=UDP_RDT_Server, args=("10.10.7.1", 4444))
-        t2 = threading.Thread(target=UDP_RDT_Server, args=("10.10.5.2", 4444))
-        t3 = threading.Thread(target=UDP_RDT_Server, args=("10.10.4.2", 4444))
-        t4 = threading.Thread(target=ACKHandler)
-        t1.start()
-        t2.start()
-        t3.start()
-        t4.start()
-        t1.join()
-        print("t1 exit")
-        t2.join()
-        print("t2 exit")
-        t3.join()
-        print("t3 exit")
-        t4.join()
-        print("t4 exit")
-    else:
-        print("INVALID EXP NO")
-        sys.exit()
+
+    for i in range(sys.argv[2]):
+        print("Experiment %d starting", i)
+
+        #Fix environment variables
+        received_packets = {}
+        mutex = threading.Lock()
+        key_max = -1
+        ack = 1
+        finished = False
+        started = False
+        r1_count = 0
+        r2_count = 0
+        r3_count = 0
+        socket_dict = {}
+
+        if experiment_no == "1":
+            t1 = threading.Thread(target=UDP_RDT_Server, args=("10.10.7.1", 4444))
+            t2 = threading.Thread(target=ACKHandler)
+            t1.start()
+            t2.start()
+            t1.join()
+            t2.join()
+        elif experiment_no == "2":
+            t1 = threading.Thread(target=UDP_RDT_Server, args=("10.10.7.1", 4444))
+            t2 = threading.Thread(target=UDP_RDT_Server, args=("10.10.5.2", 4444))
+            t3 = threading.Thread(target=UDP_RDT_Server, args=("10.10.4.2", 4444))
+            t4 = threading.Thread(target=ACKHandler)
+            t1.start()
+            t2.start()
+            t3.start()
+            t4.start()
+            t1.join()
+            print("t1 exit")
+            t2.join()
+            print("t2 exit")
+            t3.join()
+            print("t3 exit")
+            t4.join()
+            print("t4 exit")
+        else:
+            print("INVALID EXP NO")
+            sys.exit()
+
+        print("Experiment %d is finished.", i)
 
     mylist = list(received_packets.keys())
     mylist.sort()

@@ -8,59 +8,6 @@ R3_ADDRESS = ("10.10.3.2", 4444)
 R2_ADDRESS = ("10.10.2.1", 4444)
 R1_ADDRESS = ("10.10.1.2", 4444)
 WINDOW_SIZES = {R1_ADDRESS:10, R2_ADDRESS:10, R3_ADDRESS:25}
-TIME_OUT_INTERVAL = 2000
-
-packets_flow = {R1_ADDRESS:[], R2_ADDRESS:[], R3_ADDRESS:[]}
-n_packets_flow = {R1_ADDRESS:0, R2_ADDRESS:0, R3_ADDRESS:0}
-packet_index = 1
-finished = False
-fin_ack_received = False
-packets = []
-packet_mutex = threading.Lock()
-n_packet_mutex = threading.Lock()
-
-def UDP_RDT_Client(experimentNo, file_name):
-    global packet_index
-    global n_packets_flow
-    global finished
-    global packets
-    global packet_mutex
-    global n_packet_mutex
-
-    header = 1
-    # Create packets with incresing headers of 2 bytes.
-    with open(file_name,"rb") as f:
-        while True:
-            payload = f.read(996)
-            if not payload:
-                break
-            packets.append(header.to_bytes(4, byteorder='big') + payload)
-            header += 1
-    start = time.time()
-    # Create socket for sending packets to server.
-    UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    t = threading.Thread(target=UDP_RDT_Listen_Ack, args=(UDPClientSocket, len(packets)))
-    t.start()
-
-    if experimentNo=="1":
-        UDP_RDT_Sender(UDPClientSocket, R3_ADDRESS)
-        
-    elif experimentNo == "2":
-        t1 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R1_ADDRESS))
-        t2 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R2_ADDRESS))
-        t3 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R3_ADDRESS))
-        t1.start()
-        t2.start()
-        t3.start()
-        t1.join()
-        t2.join()
-        t3.join()
-
-    else:
-        raise ("Experiment no is invalid!")
-    t.join()
-    end = time.time()
-    print("Time elapsed:", end-start)
 
 def UDP_RDT_Sender(UDPClientSocket, address):
     global packet_index
@@ -149,5 +96,61 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
             break   
 
 if __name__ == "__main__":
-    # Create UDPClient and start sending messages.
-    UDP_RDT_Client(sys.argv[1], "input1.txt")
+
+    experimentNo = sys.argv[1]
+
+    header = 1
+    # Create packets with incresing headers of 2 bytes.
+    with open("input1.txt","rb") as f:
+        while True:
+            payload = f.read(996)
+            if not payload:
+                break
+            packets.append(header.to_bytes(4, byteorder='big') + payload)
+            header += 1
+
+    # Create socket for sending packets to server.
+    UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    elapsed_times = []
+    for i in range(sys.argv[2]):
+        print("Experiment %d starting", i)
+        #Fix environment variables
+        packets_flow = {R1_ADDRESS:[], R2_ADDRESS:[], R3_ADDRESS:[]}
+        n_packets_flow = {R1_ADDRESS:0, R2_ADDRESS:0, R3_ADDRESS:0}
+        packet_index = 1
+        finished = False
+        fin_ack_received = False
+        packets = []
+        packet_mutex = threading.Lock()
+        n_packet_mutex = threading.Lock()
+
+        start = time.time()
+
+        t = threading.Thread(target=UDP_RDT_Listen_Ack, args=(UDPClientSocket, len(packets)))
+        t.start()
+        if experimentNo=="1":
+            UDP_RDT_Sender(UDPClientSocket, R3_ADDRESS)
+        elif experimentNo == "2":
+            t1 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R1_ADDRESS))
+            t2 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R2_ADDRESS))
+            t3 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R3_ADDRESS))
+            t1.start()
+            t2.start()
+            t3.start()
+            t1.join()
+            t2.join()
+            t3.join()
+        else:
+            raise ("Experiment no is invalid!")
+        t.join()
+
+        end = time.time()
+        elapsed_times.append(end-start)
+        print("Experiment %d is finished in %f", i, end-start)
+
+        time.sleep(5)
+
+    with open(sys.argv[3],"w") as f:
+         for elapsed_time in elapsed_times:
+             f.write(elapsed_time + "\n")
