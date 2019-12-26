@@ -59,7 +59,7 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
     expected_ack = 2
     prev_ack = 0
     dup_count = 0
-    last_ack_received = {R1_ADDRESS:0, R2_ADDRESS:0, R3_ADDRESS:0}
+    last_ack_received = {R1_ADDRESS:float('inf'), R2_ADDRESS:float('inf'), R3_ADDRESS:float('inf')}
     down_flag = {R1_ADDRESS:False, R2_ADDRESS:False, R3_ADDRESS:False}
 
     while True:
