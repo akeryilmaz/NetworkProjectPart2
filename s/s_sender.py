@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
     # Create socket for sending packets to server.
     UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
+    time.sleep(60)
     with open(sys.argv[3],"w") as f:
         for i in range(int(sys.argv[2])):
             print("Experiment %d starting" %(i))

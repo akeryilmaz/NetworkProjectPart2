@@ -58,7 +58,7 @@ def gap_check():
 if __name__ == "__main__":
     # Start listening for messages coming from r3 as a UDPServer.
     experiment_no = sys.argv[1]
-
+    time.sleep(45)
     for i in range(int(sys.argv[2])):
         print("Experiment %d starting" %(i))
 
