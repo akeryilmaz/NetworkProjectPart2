@@ -4,9 +4,7 @@ import threading
 import sys
 
 received_packets = {}
-packets_mutex = threading.Lock()
-ack_mutex = threading.Lock()
-key_max_mutex = threading.Lock()
+mutex = threading.Lock()
 key_max = -1
 ack = 1
 finished = False
@@ -41,16 +39,18 @@ def UDP_RDT_Server(localIP, localPort):
             UDPServerSocket.sendto(current_key.to_bytes(4, byteorder='big'), address)
             finished = True
         else:
-            received_packets[current_key] = packet[4:]
+            with mutex:
+                received_packets[current_key] = packet[4:]
 
 def ACKHandler():
     print("Ack handler thread created.")
     while not finished:
         last_consec = gap_check()
-        for k in socket_dict:
-            k.sendto(last_consec.to_bytes(4, byteorder='big'), socket_dict[k])
-            print("sent ACK:", last_consec)
-        time.sleep(0.015)
+        with mutex:
+            for k in socket_dict:
+                k.sendto(last_consec.to_bytes(4, byteorder='big'), socket_dict[k])
+                print("sent ACK:", last_consec)
+            time.sleep(0.015)
 
 def gap_check():
     global received_packets
