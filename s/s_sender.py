@@ -9,7 +9,7 @@ TIME_OUT_INTERVAL = 20
 
 R3_ADDRESS = ("10.10.3.2", 4444)
 R2_ADDRESS = ("10.10.2.1", 4444)
-R1_ADDRESS = ("10.10.1.1", 4444)
+R1_ADDRESS = ("10.10.1.2", 4444)
 
 current_window = 0
 packet_index = 1
@@ -76,7 +76,7 @@ def UDP_RDT_Sender(UDPClientSocket, address):
             with packet_mutex:
                 packet = packets[packet_index-1]
                 packet_index += 1
-                print("Packet sent:", packet_index)
+                print("Packet sent to:", packet_index, address)
             # Send the packet
             n_bytes = UDPClientSocket.sendto(packet, address)
             with window_mutex:
