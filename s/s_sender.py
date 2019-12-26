@@ -111,15 +111,16 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
             finished = True
             break
         elif d_ack >= expected_ack:
+            print("good ack:", expected_ack, d_ack)
             max_sent_packet = 0
             with n_packet_mutex:
                 for address in packets_flow:
                     sent_packet_indices = packets_flow[address]
-                    for sent_packet_index in sent_packet_indices:
+                    for i, sent_packet_index in enumerate(sent_packet_indices):
                         if (sent_packet_index < d_ack):
                             expected_ack += 1
                             n_packets_flow[address] -= 1
-                            del packets_flow[address][sent_packet_index]
+                            del packets_flow[address][i]
         else:
             with n_packet_mutex:
                 for address in n_packets_flow:
