@@ -58,7 +58,7 @@ if __name__ == "__main__":
     experiment_no = sys.argv[1]
 
     for i in range(int(sys.argv[2])):
-        print("Experiment %d starting", i)
+        print("Experiment %d starting" %(i))
 
         #Fix environment variables
         received_packets = {}
@@ -100,7 +100,7 @@ if __name__ == "__main__":
             print("INVALID EXP NO")
             sys.exit()
 
-        print("Experiment %d is finished.", i)
+        print("Experiment %d is finished." %(i))
 
     mylist = list(received_packets.keys())
     mylist.sort()
