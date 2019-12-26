@@ -76,8 +76,8 @@ def UDP_RDT_Sender(UDPClientSocket, address):
         elif packet_index<=len(packets):
             with packet_mutex:
                 packet = packets[packet_index-1]
-                packet_index += 1
                 print("Packet sent to:", packet_index, address)
+                packet_index += 1
             # Send the packet
             UDPClientSocket.sendto(packet, address)
             with n_packet_mutex:
