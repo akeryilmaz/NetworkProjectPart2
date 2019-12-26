@@ -164,4 +164,4 @@ if __name__ == "__main__":
         with open(sys.argv[3],"a") as f:
             f.write(str(end-start) + "\n")
         print("Experiment %d is finished in %f" %( i, end-start))
-        time.sleep(20)
+        time.sleep(5)
