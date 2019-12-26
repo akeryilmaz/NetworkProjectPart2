@@ -129,45 +129,40 @@ if __name__ == "__main__":
     # Create socket for sending packets to server.
     UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    elapsed_times = []
-    for i in range(int(sys.argv[2])):
-        print("Experiment %d starting" %(i))
-        #Fix environment variables
-        packets_flow = {R1_ADDRESS:[], R2_ADDRESS:[], R3_ADDRESS:[]}
-        n_packets_flow = {R1_ADDRESS:0, R2_ADDRESS:0, R3_ADDRESS:0}
-        packet_index = 1
-        finished = False
-        fin_ack_received = False
-        packet_mutex = threading.Lock()
-        n_packet_mutex = threading.Lock()
-        fin_timeout = False
-
-        start = time.time()
-
-        t = threading.Thread(target=UDP_RDT_Listen_Ack, args=(UDPClientSocket, len(packets)))
-        t.start()
-        if experimentNo=="1":
-            UDP_RDT_Sender(UDPClientSocket, R3_ADDRESS)
-        elif experimentNo == "2":
-            t1 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R1_ADDRESS))
-            t2 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R2_ADDRESS))
-            t3 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R3_ADDRESS))
-            t1.start()
-            t2.start()
-            t3.start()
-            t1.join()
-            t2.join()
-            t3.join()
-        else:
-            raise ("Experiment no is invalid!")
-        t.join()
-
-        end = time.time()
-        elapsed_times.append(end-start)
-        print("Experiment %d is finished in %f" %( i, end-start))
-
-        time.sleep(5)
-
     with open(sys.argv[3],"w") as f:
-         for elapsed_time in elapsed_times:
-             f.write(str(elapsed_time) + "\n")
+        for i in range(int(sys.argv[2])):
+            print("Experiment %d starting" %(i))
+            #Fix environment variables
+            packets_flow = {R1_ADDRESS:[], R2_ADDRESS:[], R3_ADDRESS:[]}
+            n_packets_flow = {R1_ADDRESS:0, R2_ADDRESS:0, R3_ADDRESS:0}
+            packet_index = 1
+            finished = False
+            fin_ack_received = False
+            packet_mutex = threading.Lock()
+            n_packet_mutex = threading.Lock()
+            fin_timeout = False
+
+            start = time.time()
+
+            t = threading.Thread(target=UDP_RDT_Listen_Ack, args=(UDPClientSocket, len(packets)))
+            t.start()
+            if experimentNo=="1":
+                UDP_RDT_Sender(UDPClientSocket, R3_ADDRESS)
+            elif experimentNo == "2":
+                t1 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R1_ADDRESS))
+                t2 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R2_ADDRESS))
+                t3 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R3_ADDRESS))
+                t1.start()
+                t2.start()
+                t3.start()
+                t1.join()
+                t2.join()
+                t3.join()
+            else:
+                raise ("Experiment no is invalid!")
+            t.join()
+
+            end = time.time()
+            f.write(str(end-start) + "\n")
+            print("Experiment %d is finished in %f" %( i, end-start))
+            time.sleep(20)

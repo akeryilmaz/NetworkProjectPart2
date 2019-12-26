@@ -101,6 +101,7 @@ if __name__ == "__main__":
             sys.exit()
 
         print("Experiment %d is finished." %(i))
+        time.sleep(10)
 
     mylist = list(received_packets.keys())
     mylist.sort()
