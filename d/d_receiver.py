@@ -45,18 +45,20 @@ def UDP_RDT_Server(localIP, localPort):
 
 def ACKHandler():
     print("Ack handler thread created.")
-    while not finished and started:
-        last_consec = gap_check() + 1
+    while not finished:
+        last_consec = gap_check()
         for k in socket_dict:
             k.sendto(last_consec.to_bytes(4, byteorder='big'), socket_dict[k])
             print("sent ACK:", last_consec)
-        time.sleep(0.1)
-
+        time.sleep(0.015)
 
 def gap_check():
-    last_consec = 0
-    for mykey in received_packets:
-        if mykey == last_consec + 1:
+    global received_packets
+    last_consec = 1
+    mylist = list(received_packets.keys())
+    mylist.sort()
+    for mykey in mylist:
+        if mykey == last_consec:
             last_consec += 1
         else:
             break
