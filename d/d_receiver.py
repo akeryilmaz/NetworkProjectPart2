@@ -9,11 +9,13 @@ ack_mutex = threading.Lock()
 key_max_mutex = threading.Lock()
 key_max = -1
 ack = 1
+finished = False
 
 def UDP_RDT_Server(localIP, localPort):
     global key_max
     global received_packets
     global ack
+    global finished
     # Create UDP Server socket and bind local IP & port to it.
     UDPServerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     UDPServerSocket.bind((localIP, localPort))
@@ -22,7 +24,7 @@ def UDP_RDT_Server(localIP, localPort):
     #ack is the header of the packet expected.
     timer_running = False
 
-    while True:
+    while not finished:
         # Listen for incoming packets.
         try:
             packet, address = UDPServerSocket.recvfrom(1024)
@@ -36,7 +38,7 @@ def UDP_RDT_Server(localIP, localPort):
             # key 0 means thread is finished
             if current_key == 0:
                 UDPServerSocket.sendto(current_key.to_bytes(4, byteorder='big'), address)
-                break
+                finished = True
             # Not expected packet, reject
             elif current_key != ack:
                 UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
