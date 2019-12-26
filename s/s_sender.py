@@ -36,7 +36,7 @@ def UDP_RDT_Client(experimentNo, file_name):
                 break
             packets.append(header.to_bytes(4, byteorder='big') + payload)
             header += 1
-
+    start = time.time()
     # Create socket for sending packets to server.
     UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     t = threading.Thread(target=UDP_RDT_Listen_Ack, args=(UDPClientSocket, len(packets)))
@@ -59,6 +59,8 @@ def UDP_RDT_Client(experimentNo, file_name):
     else:
         raise ("Experiment no is invalid!")
     t.join()
+    end = time.time()
+    print("Time elapsed:", end-start)
 
 def UDP_RDT_Sender(UDPClientSocket, address):
     global packet_index
