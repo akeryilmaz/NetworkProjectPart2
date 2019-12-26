@@ -3,20 +3,22 @@ import time
 import threading
 import sys
 
+class myBoolean:
+    def __init__(self):
+        self.val = False
+
 def UDP_RDT_Server(localIP, localPort):
-    global key_max
     global received_packets
     global ack
-    global finished
     global socket_dict
     global started
-
+    
     # Create UDP Server socket and bind local IP & port to it.
     UDPServerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     UDPServerSocket.bind((localIP, localPort))
     print("UDP_RDT_Server Server on IP {} is ready.".format(localIP))
 
-    while not finished:
+    while not mfinished.val:
         # Listen for incoming packets.
         packet, address = UDPServerSocket.recvfrom(1024)
         socket_dict[UDPServerSocket] = address
@@ -26,14 +28,14 @@ def UDP_RDT_Server(localIP, localPort):
         # key 0 means thread is finished
         if current_key == 0:
             UDPServerSocket.sendto(current_key.to_bytes(4, byteorder='big'), address)
-            finished = True
+            mfinished.val = True
         else:
             with mutex:
                 received_packets[current_key] = packet[4:]
 
 def ACKHandler():
     print("Ack handler thread created.")
-    while not finished:
+    while not mfinished.val:
         last_consec = gap_check()
         with mutex:
             for k in socket_dict:
@@ -65,7 +67,7 @@ if __name__ == "__main__":
         mutex = threading.Lock()
         key_max = -1
         ack = 1
-        finished = False
+        mfinished = myBoolean()
         started = False
         r1_count = 0
         r2_count = 0
