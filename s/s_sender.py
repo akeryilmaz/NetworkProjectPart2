@@ -116,7 +116,8 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
 
         elif d_ack >= expected_ack:
 
-            for address, sent_packet_indices in packets_flow:
+            for address in packets_flow:
+                sent_packet_indices = packets_flow[address]
                 for sent_packet_index in sent_packet_indices:
                     if (sent_packet_index < d_ack):
                         successful_sent[address] += 1
