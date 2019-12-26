@@ -29,69 +29,37 @@ def UDP_RDT_Server(localIP, localPort):
     UDPServerSocket.bind((localIP, localPort))
     print("UDP_RDT_Server Server on IP {} is ready.".format(localIP))
 
-    #ack is the header of the packet expected.
-    timer_running = False
-
     while not finished:
         # Listen for incoming packets.
-        try:
-            packet, address = UDPServerSocket.recvfrom(1024)
-            socket_dict[UDPServerSocket] = address
-            #UDPServerSocket.settimeout(0.3)
-            started = True
-        except socket.timeout:
-            #UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
-            #print("Timeout, sent ACK:", ack)
-            pass
+        packet, address = UDPServerSocket.recvfrom(1024)
+        socket_dict[UDPServerSocket] = address
+        started = True
         header = packet[:4]
-        current_key = int.from_bytes(header, byteorder="big")  
-        with ack_mutex:
-            # key 0 means thread is finished
-            if current_key == 0:
-                UDPServerSocket.sendto(current_key.to_bytes(4, byteorder='big'), address)
-                finished = True
-            # Not expected packet, reject
-            elif current_key != ack:
-                #UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
-                received_packets[current_key] = packet[4:]
-                #print("Unexpected,currentkey:",current_key, "sent ACK:", ack)
-            # Expected packet, accept
-            else:
-                ack += 1
-                payload = packet[4:]
-                received_packets[current_key] = payload 
-                if current_key > key_max:
-                    key_max = current_key
-                #UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
-                #print("Sent ACK:", ack)
+        current_key = int.from_bytes(header, byteorder="big")
+        # key 0 means thread is finished
+        if current_key == 0:
+            UDPServerSocket.sendto(current_key.to_bytes(4, byteorder='big'), address)
+            finished = True
+        else:
+            received_packets[current_key] = packet[4:]
 
 def ACKHandler():
-    global finished
-    global socket_dict
-    global started
     print("Ack handler thread created.")
-    while not finished:
+    while not finished and started:
         last_consec = gap_check() + 1
         for k in socket_dict:
             k.sendto(last_consec.to_bytes(4, byteorder='big'), socket_dict[k])
             print("sent ACK:", last_consec)
-        time.sleep(0.5)
+        time.sleep(0.1)
 
 
 def gap_check():
-    global received_packets
     last_consec = 0
-    print("Gap check is called.")
     for mykey in received_packets:
-        if last_consec < key_max:
+        if mykey == last_consec + 1:
             last_consec += 1
-            continue
         else:
-            if mykey == last_consec + 1:
-                last_consec += 1
-            else:
-                break
-    print("Gap check val:", last_consec)
+            break
     return last_consec
 
 if __name__ == "__main__":
