@@ -37,11 +37,12 @@ def UDP_RDT_Server(localIP, localPort):
         try:
             packet, address = UDPServerSocket.recvfrom(1024)
             socket_dict[UDPServerSocket] = address
-            UDPServerSocket.settimeout(0.3)
+            #UDPServerSocket.settimeout(0.3)
             started = True
         except socket.timeout:
-            UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
-            print("Timeout, sent ACK:", ack)
+            #UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
+            #print("Timeout, sent ACK:", ack)
+            pass
         header = packet[:4]
         current_key = int.from_bytes(header, byteorder="big")  
         with ack_mutex:
@@ -68,17 +69,19 @@ def ACKHandler():
     global finished
     global socket_dict
     global started
-    while not finished and started:
-        last_consec = gap_check()
+    print("Ack handler thread created.")
+    while not finished:
+        last_consec = gap_check() + 1
         for k in socket_dict:
             k.sendto(last_consec.to_bytes(4, byteorder='big'), socket_dict[k])
-        print("sent ACK:", last_consec)
+            print("sent ACK:", last_consec)
         time.sleep(0.5)
 
 
 def gap_check():
     global received_packets
     last_consec = 0
+    print("Gap check is called.")
     for mykey in received_packets:
         if last_consec < key_max:
             last_consec += 1
@@ -88,13 +91,19 @@ def gap_check():
                 last_consec += 1
             else:
                 break
+    print("Gap check val:", last_consec)
     return last_consec
 
 if __name__ == "__main__":
     # Start listening for messages coming from r3 as a UDPServer.
     experiment_no = sys.argv[1]
     if experiment_no == "1":
-        UDP_RDT_Server("10.10.7.1", 4444)
+        t1 = threading.Thread(target=UDP_RDT_Server, args=("10.10.7.1", 4444))
+        t2 = threading.Thread(target=ACKHandler)
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
     elif experiment_no == "2":
         t1 = threading.Thread(target=UDP_RDT_Server, args=("10.10.7.1", 4444))
         t2 = threading.Thread(target=UDP_RDT_Server, args=("10.10.5.2", 4444))
