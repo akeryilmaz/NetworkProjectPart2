@@ -43,7 +43,7 @@ def UDP_RDT_Client(experimentNo, file_name):
     t.start()
 
     if experimentNo=="1":
-        UDP_RDT_Sender(UDPClientSocket, R3_ADDRESS, 2)
+        UDP_RDT_Sender(UDPClientSocket, R3_ADDRESS)
         
     elif experimentNo == "2":
         t1 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R1_ADDRESS))
