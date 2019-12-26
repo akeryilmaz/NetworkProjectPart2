@@ -4,28 +4,28 @@ import threading
 import sys
 import struct
 
-WINDOW_SIZE = 10
-TIME_OUT_INTERVAL = 20
-
 R3_ADDRESS = ("10.10.3.2", 4444)
 R2_ADDRESS = ("10.10.2.1", 4444)
 R1_ADDRESS = ("10.10.1.2", 4444)
+WINDOW_SIZES = {R1_ADDRESS:10, R2_ADDRESS:10, R3_ADDRESS:20}
+TIME_OUT_INTERVAL = 2000
 
-current_window = 0
+packets_flow = {R1_ADDRESS:[], R2_ADDRESS:[], R3_ADDRESS:[]}
+n_packets_flow = {R1_ADDRESS:0, R2_ADDRESS:0, R3_ADDRESS:0}
 packet_index = 1
 finished = False
 fin_ack_received = False
 packets = []
 packet_mutex = threading.Lock()
-window_mutex = threading.Lock()
+n_packet_mutex = threading.Lock()
 
 def UDP_RDT_Client(experimentNo, file_name):
     global packet_index
-    global current_window
+    global n_packets_flow
     global finished
     global packets
     global packet_mutex
-    global window_mutex
+    global n_packet_mutex
 
     header = 1
     # Create packets with incresing headers of 2 bytes.
@@ -62,25 +62,27 @@ def UDP_RDT_Client(experimentNo, file_name):
 
 def UDP_RDT_Sender(UDPClientSocket, address):
     global packet_index
-    global current_window
+    global n_packets_flow
     global finished
     global packets
     global packet_mutex
-    global window_mutex
     global fin_ack_received
+    global n_packet_mutex
+    global packets_flow
 
     while not finished:
-        if current_window>=WINDOW_SIZE:
+        if n_packets_flow[address]>=WINDOW_SIZES[address]:
             continue
         elif packet_index<=len(packets):
             with packet_mutex:
                 packet = packets[packet_index-1]
-                packet_index += 1
                 print("Packet sent to:", packet_index, address)
+                packet_index += 1
             # Send the packet
-            n_bytes = UDPClientSocket.sendto(packet, address)
-            with window_mutex:
-                current_window += 1
+            UDPClientSocket.sendto(packet, address)
+            with n_packet_mutex:
+                n_packets_flow[address] += 1
+                packets_flow[address].append(packet_index)
 
     fin = 0
     finPacket = fin.to_bytes(4, byteorder='big')
@@ -93,45 +95,49 @@ def UDP_RDT_Sender(UDPClientSocket, address):
 
 def UDP_RDT_Listen_Ack(DSocket, n_packets):
     global packet_index
-    global current_window
+    global n_packets_flow
     global finished
     global packet_mutex
-    global window_mutex
+    global n_packet_mutex
     global fin_ack_received
+    global packets_flow
 
     expected_ack = 2
-    timer_running = False
-    bad_ack_time = 99999999999999999
+    prev_ack = 0
+    dup_count = 0
 
     while True:
         d_ack = int.from_bytes(DSocket.recv(1024), byteorder="big")
+
         if d_ack == n_packets + 1:
             finished = True
             break
-        elif d_ack >= expected_ack:
-            with window_mutex:
-                current_window -= d_ack - expected_ack + 1
+        elif d_ack == prev_ack:
+            dup_count += 1
+            if dup_count == 3:
+                with n_packet_mutex:
+                    for address in n_packets_flow:
+                        n_packets_flow[address] = 0
+                        packets_flow[address] = []
                 expected_ack = d_ack + 1
-                timer_running = False
-            if d_ack > packet_index:
                 with packet_mutex:
                     packet_index = d_ack
+        elif d_ack >= expected_ack:
+            print("good ack:", expected_ack, d_ack)
+            max_sent_packet = 0
+            with n_packet_mutex:
+                for address in packets_flow:
+                    sent_packet_indices = packets_flow[address]
+                    for i, sent_packet_index in enumerate(sent_packet_indices):
+                        if (sent_packet_index < d_ack):
+                            expected_ack += 1
+                            n_packets_flow[address] -= 1
+                            del packets_flow[address][i]
+            dup_count = 0
         else:
-            print(int(round(time.time() * 1000)) - bad_ack_time)
-            if not timer_running:
-                bad_ack_time = int(round(time.time() * 1000))
-                timer_running = True
-            elif int(round(time.time() * 1000)) - bad_ack_time > TIME_OUT_INTERVAL:
-                print("CHANGING VARIABLES")
-                with packet_mutex:
-                    packet_index = d_ack
-                with window_mutex:
-                    current_window = 0
-                    expected_ack = d_ack + 1
-                print("PACKET INDEX:", packet_index)
-                print("EXPECTED ACK:", expected_ack)
-                print("CURRENT WINDOW:", current_window)
-                timer_running = False
+            dup_count = 0
+       
+        prev_ack = d_ack
 
     while True: 
         packet, address = DSocket.recvfrom(1024)
