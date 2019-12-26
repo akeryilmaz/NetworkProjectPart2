@@ -59,7 +59,7 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
     expected_ack = 2
     prev_ack = 0
     dup_count = 0
-    last_ack_received = {R1_ADDRESS:float('inf'), R2_ADDRESS:float('inf'), R3_ADDRESS:float('inf')}
+    last_ack_received = {R1_ADDRESS:time.time(), R2_ADDRESS:time.time(), R3_ADDRESS:time.time()}
     down_flag = {R1_ADDRESS:False, R2_ADDRESS:False, R3_ADDRESS:False}
 
     while True:
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     elapsed_times = []
     for i in range(int(sys.argv[2])):
-        print("Experiment %d starting", i)
+        print("Experiment %d starting" %(i))
         #Fix environment variables
         packets_flow = {R1_ADDRESS:[], R2_ADDRESS:[], R3_ADDRESS:[]}
         n_packets_flow = {R1_ADDRESS:0, R2_ADDRESS:0, R3_ADDRESS:0}
@@ -164,7 +164,7 @@ if __name__ == "__main__":
 
         end = time.time()
         elapsed_times.append(end-start)
-        print("Experiment %d is finished in %f", i, end-start)
+        print("Experiment %d is finished in %f" %( i, end-start))
 
         time.sleep(5)
 
