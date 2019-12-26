@@ -7,7 +7,7 @@ import struct
 R3_ADDRESS = ("10.10.3.2", 4444)
 R2_ADDRESS = ("10.10.2.1", 4444)
 R1_ADDRESS = ("10.10.1.2", 4444)
-WINDOW_SIZES = {R1_ADDRESS:10, R2_ADDRESS:10, R3_ADDRESS:20}
+WINDOW_SIZES = {R1_ADDRESS:10, R2_ADDRESS:10, R3_ADDRESS:25}
 TIME_OUT_INTERVAL = 2000
 
 packets_flow = {R1_ADDRESS:[], R2_ADDRESS:[], R3_ADDRESS:[]}
@@ -76,7 +76,7 @@ def UDP_RDT_Sender(UDPClientSocket, address):
         elif packet_index<=len(packets):
             with packet_mutex:
                 packet = packets[packet_index-1]
-                print("Packet sent to:", packet_index, address)
+                #print("Packet sent to:", packet_index, address)
                 packet_index += 1
             # Send the packet
             UDPClientSocket.sendto(packet, address)
@@ -114,7 +114,8 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
             break
         elif d_ack == prev_ack:
             dup_count += 1
-            if dup_count == 3:
+            if dup_count >= 3:
+                print("dup ack")
                 with n_packet_mutex:
                     for address in n_packets_flow:
                         n_packets_flow[address] = 0
@@ -122,6 +123,7 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
                 expected_ack = d_ack + 1
                 with packet_mutex:
                     packet_index = d_ack
+                dup_count=0
         elif d_ack >= expected_ack:
             print("good ack:", expected_ack, d_ack)
             max_sent_packet = 0
@@ -133,8 +135,6 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
                             expected_ack += 1
                             n_packets_flow[address] -= 1
                             del packets_flow[address][i]
-            dup_count = 0
-        else:
             dup_count = 0
        
         prev_ack = d_ack
