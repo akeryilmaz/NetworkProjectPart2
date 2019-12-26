@@ -38,7 +38,6 @@ def SSender(SSocket, address, packetQueue_DS):
         print("Sent to S")
 
 if __name__ == "__main__":
-    time.sleep(45)
     # destinations[s]=r3-s link interface to s
     # sources[s]=r3-s link interface to r3
     # destinations[d]=r3-d link interface to d
