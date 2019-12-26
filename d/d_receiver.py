@@ -10,12 +10,20 @@ key_max_mutex = threading.Lock()
 key_max = -1
 ack = 1
 finished = False
+started = False
+r1_count = 0
+r2_count = 0
+r3_count = 0
+socket_dict = {}
 
 def UDP_RDT_Server(localIP, localPort):
     global key_max
     global received_packets
     global ack
     global finished
+    global socket_dict
+    global started
+
     # Create UDP Server socket and bind local IP & port to it.
     UDPServerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     UDPServerSocket.bind((localIP, localPort))
@@ -28,7 +36,9 @@ def UDP_RDT_Server(localIP, localPort):
         # Listen for incoming packets.
         try:
             packet, address = UDPServerSocket.recvfrom(1024)
+            socket_dict[UDPServerSocket] = address
             UDPServerSocket.settimeout(0.3)
+            started = True
         except socket.timeout:
             UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
             print("Timeout, sent ACK:", ack)
@@ -41,8 +51,9 @@ def UDP_RDT_Server(localIP, localPort):
                 finished = True
             # Not expected packet, reject
             elif current_key != ack:
-                UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
-                print("Unexpected,currentkey:",current_key, "sent ACK:", ack)
+                #UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
+                received_packets[current_key] = packet[4:]
+                #print("Unexpected,currentkey:",current_key, "sent ACK:", ack)
             # Expected packet, accept
             else:
                 ack += 1
@@ -50,9 +61,34 @@ def UDP_RDT_Server(localIP, localPort):
                 received_packets[current_key] = payload 
                 if current_key > key_max:
                     key_max = current_key
-                UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
-                print("Sent ACK:", ack)
+                #UDPServerSocket.sendto(ack.to_bytes(4, byteorder='big'), address)
+                #print("Sent ACK:", ack)
 
+def ACKHandler():
+    global finished
+    global socket_dict
+    global started
+    while not finished and started:
+        last_consec = gap_check()
+        for k in socket_dict:
+            k.sendto(last_consec.to_bytes(4, byteorder='big'), socket_dict[k])
+        print("sent ACK:", last_consec)
+        time.sleep(0.5)
+
+
+def gap_check():
+    global received_packets
+    last_consec = 0
+    for mykey in received_packets:
+        if last_consec < key_max:
+            last_consec += 1
+            continue
+        else:
+            if mykey == last_consec + 1:
+                last_consec += 1
+            else:
+                break
+    return last_consec
 
 if __name__ == "__main__":
     # Start listening for messages coming from r3 as a UDPServer.
@@ -63,12 +99,15 @@ if __name__ == "__main__":
         t1 = threading.Thread(target=UDP_RDT_Server, args=("10.10.7.1", 4444))
         t2 = threading.Thread(target=UDP_RDT_Server, args=("10.10.5.2", 4444))
         t3 = threading.Thread(target=UDP_RDT_Server, args=("10.10.4.2", 4444))
+        t4 = threading.Thread(target=ACKHandler)
         t1.start()
         t2.start()
         t3.start()
+        t4.start()
         t1.join()
         t2.join()
         t3.join()
+        t4.join()
     else:
         print("INVALID EXP NO")
         sys.exit()
