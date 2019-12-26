@@ -37,8 +37,8 @@ def SSender(SSocket, address, packetQueue_DS):
         print("Sent to S")
 
 if __name__ == "__main__":
-    destinations = {'s' : "10.10.1.1", 'd': "10.10.4.1"}
-    sources = {'s': "10.10.1.2", 'd': "10.10.4.2"}
+    destinations = {'s' : "10.10.1.1", 'd': "10.10.4.2"}
+    sources = {'s': "10.10.1.2", 'd': "10.10.4.1"}
 
     # There will be 1 server thread running
     # in order to receive the packets sent from s
