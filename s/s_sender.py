@@ -8,6 +8,7 @@ R3_ADDRESS = ("10.10.3.2", 4444)
 R2_ADDRESS = ("10.10.2.1", 4444)
 R1_ADDRESS = ("10.10.1.2", 4444)
 WINDOW_SIZES = {R1_ADDRESS:10, R2_ADDRESS:10, R3_ADDRESS:25}
+LINK_FAILURE_TIMEOUT = 5
 
 def UDP_RDT_Sender(UDPClientSocket, address):
     global packet_index
@@ -18,6 +19,7 @@ def UDP_RDT_Sender(UDPClientSocket, address):
     global fin_ack_received
     global n_packet_mutex
     global packets_flow
+    global fin_timeout
 
     while not finished:
         if n_packets_flow[address]>=WINDOW_SIZES[address]:
@@ -35,11 +37,13 @@ def UDP_RDT_Sender(UDPClientSocket, address):
 
     fin = 0
     finPacket = fin.to_bytes(4, byteorder='big')
-
-    while not fin_ack_received:
+    fin_count = 0
+    while not fin_ack_received and fin_count < 100:
         # Send finish
         UDPClientSocket.sendto(finPacket, address)
-        time.sleep(0.5)
+        fin_count += 1
+        time.sleep(0.05)
+    fin_timeout = True
 
 
 def UDP_RDT_Listen_Ack(DSocket, n_packets):
@@ -50,13 +54,21 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
     global n_packet_mutex
     global fin_ack_received
     global packets_flow
+    global fin_timeout
 
     expected_ack = 2
     prev_ack = 0
     dup_count = 0
+    last_ack_received = {R1_ADDRESS:0, R2_ADDRESS:0, R3_ADDRESS:0}
 
     while True:
-        d_ack = int.from_bytes(DSocket.recv(1024), byteorder="big")
+        packet, address = DSocket.recvfrom(1024)
+        d_ack = int.from_bytes(packet, byteorder="big")
+        last_ack_received[address] = time.time()
+
+        for address in last_ack_received:
+            if time.time() - last_ack_received[address] > LINK_FAILURE_TIMEOUT:
+                WINDOW_SIZES[address] = 0
 
         if d_ack == n_packets + 1:
             finished = True
@@ -88,7 +100,7 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
        
         prev_ack = d_ack
 
-    while True: 
+    while not fin_timeout: 
         packet, address = DSocket.recvfrom(1024)
         packet = int.from_bytes(packet, byteorder="big")  
         if packet == 0:
@@ -123,6 +135,7 @@ if __name__ == "__main__":
         fin_ack_received = False
         packet_mutex = threading.Lock()
         n_packet_mutex = threading.Lock()
+        fin_timeout = False
 
         start = time.time()
 
