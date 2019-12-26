@@ -90,6 +90,9 @@ if __name__ == "__main__":
     else:
         print("INVALID EXP NO")
         sys.exit()
+
+    mylist = list(received_packets.keys())
+    mylist.sort()
     with open("output"+experiment_no+".txt", "wb") as f: 
-        for key in range(1, key_max+1):
-            f.write(received_packets[key])
+        for i in mylist:
+            f.write(received_packets[i])
