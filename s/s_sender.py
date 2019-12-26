@@ -129,9 +129,8 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
             expected_ack = d_ack + 1
             timer_running = False
 
-            if d_ack > packet_index:
-                with packet_mutex:
-                    packet_index = d_ack
+            with packet_mutex:
+                packet_index = d_ack
 
         else:
             if not timer_running:
