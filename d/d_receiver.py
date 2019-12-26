@@ -1,10 +1,11 @@
 import socket
 import time
 import threading
+import sys
 
 def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
 
-    if experimentNo==1:
+    if experimentNo == "1":
         # Create UDP Server socket and bind local IP & port to it.
         UDPServerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         UDPServerSocket.bind((localIP, localPort))
@@ -52,11 +53,11 @@ def UDP_RDT_Server(localIP, localPort, experimentNo, file_name):
                 f.write(received_packets[key])
 
 
-    elif experimentNo==2:
+    elif experimentNo == "2":
         pass
     else:
         raise ("Experiment no is invalid!")
 
 if __name__ == "__main__":
     # Start listening for messages coming from r3 as a UDPServer.
-    UDP_RDT_Server("10.10.7.1", 4444, 1, "output1.txt")
+    UDP_RDT_Server("10.10.7.1", 4444, sys.argv[1], "output1.txt")
