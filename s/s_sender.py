@@ -98,7 +98,7 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
 if __name__ == "__main__":
 
     experimentNo = sys.argv[1]
-
+    packets = []
     header = 1
     # Create packets with incresing headers of 2 bytes.
     with open("input1.txt","rb") as f:
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     elapsed_times = []
-    for i in range(sys.argv[2]):
+    for i in range(int(sys.argv[2])):
         print("Experiment %d starting", i)
         #Fix environment variables
         packets_flow = {R1_ADDRESS:[], R2_ADDRESS:[], R3_ADDRESS:[]}
@@ -121,7 +121,6 @@ if __name__ == "__main__":
         packet_index = 1
         finished = False
         fin_ack_received = False
-        packets = []
         packet_mutex = threading.Lock()
         n_packet_mutex = threading.Lock()
 
@@ -153,4 +152,4 @@ if __name__ == "__main__":
 
     with open(sys.argv[3],"w") as f:
          for elapsed_time in elapsed_times:
-             f.write(elapsed_time + "\n")
+             f.write(str(elapsed_time) + "\n")
