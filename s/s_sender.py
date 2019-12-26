@@ -71,6 +71,7 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
             if down_flag[address]:
                 continue
             if time.time() - last_ack_received[address] > LINK_FAILURE_TIMEOUT:
+                down_flag[address] = True
                 WINDOW_SIZES[address] = 0
                 print(address[0], "is DOWN!!!11!!!!11!")
 
