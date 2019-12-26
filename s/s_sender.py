@@ -59,8 +59,8 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
     expected_ack = 2
     prev_ack = 0
     dup_count = 0
-    last_ack_received = {R1_ADDRESS:time.time(), R2_ADDRESS:time.time(), R3_ADDRESS:time.time()}
-    down_flag = {R1_ADDRESS:False, R2_ADDRESS:False, R3_ADDRESS:False}
+    last_ack_received = {R1_ADDRESS:time.time(), R2_ADDRESS:time.time()}
+    down_flag = {R1_ADDRESS:False, R2_ADDRESS:False}
 
     while True:
         packet, address = DSocket.recvfrom(1024)
