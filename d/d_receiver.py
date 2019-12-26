@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # Start listening for messages coming from r3 as a UDPServer.
     experiment_no = sys.argv[1]
 
-    for i in range(sys.argv[2]):
+    for i in range(int(sys.argv[2])):
         print("Experiment %d starting", i)
 
         #Fix environment variables
