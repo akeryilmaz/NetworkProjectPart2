@@ -49,8 +49,8 @@ def ACKHandler():
         with mutex:
             for k in socket_dict:
                 k.sendto(last_consec.to_bytes(4, byteorder='big'), socket_dict[k])
-                print("sent ACK:", last_consec)
-            time.sleep(0.015)
+                #print("sent ACK:", last_consec)
+            time.sleep(0.05)
 
 def gap_check():
     global received_packets
@@ -84,12 +84,19 @@ if __name__ == "__main__":
         t3.start()
         t4.start()
         t1.join()
+        print("t1 exit")
         t2.join()
+        print("t2 exit")
         t3.join()
+        print("t3 exit")
         t4.join()
+        print("t4 exit")
     else:
         print("INVALID EXP NO")
         sys.exit()
+
+    mylist = list(received_packets.keys())
+    mylist.sort()
     with open("output"+experiment_no+".txt", "wb") as f: 
-        for key in range(1, key_max+1):
-            f.write(received_packets[key])
+        for i in mylist:
+            f.write(received_packets[i])
