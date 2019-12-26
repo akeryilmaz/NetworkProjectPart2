@@ -103,7 +103,6 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
     global packets_flow
 
     expected_ack = 2
-    successful_sent = {R1_ADDRESS:0, R2_ADDRESS:0, R3_ADDRESS:0}
 
     while True:
         d_ack = int.from_bytes(DSocket.recv(1024), byteorder="big")
@@ -112,25 +111,23 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
             finished = True
             break
         elif d_ack >= expected_ack:
-            for address in packets_flow:
-                sent_packet_indices = packets_flow[address]
-                for sent_packet_index in sent_packet_indices:
-                    if (sent_packet_index < d_ack):
-                        successful_sent[address] += 1
-
+            max_sent_packet = 0
             with n_packet_mutex:
-                for address in n_packets_flow:
-                    n_packets_flow[address] -= successful_sent[address]
-                    packets_flow[address] = []
-            expected_ack = d_ack + 1
+                for address in packets_flow:
+                    sent_packet_indices = packets_flow[address]
+                    for sent_packet_index in sent_packet_indices:
+                        if (sent_packet_index < d_ack):
+                            expected_ack += 1
+                            n_packets_flow[address] -= 1
+                            del packets_flow[address][sent_packet_index]
         else:
             with n_packet_mutex:
                 for address in n_packets_flow:
                     n_packets_flow[address] = 0
                     packets_flow[address] = []
             expected_ack = d_ack + 1
-        with packet_mutex:
-            packet_index = d_ack
+            with packet_mutex:
+                packet_index = d_ack
 
 
     while True: 
