@@ -8,7 +8,7 @@ R3_ADDRESS = ("10.10.3.2", 4444)
 R2_ADDRESS = ("10.10.2.1", 4444)
 R1_ADDRESS = ("10.10.1.2", 4444)
 WINDOW_SIZES = {R1_ADDRESS:10, R2_ADDRESS:10, R3_ADDRESS:20}
-TIME_OUT_INTERVAL = 20
+TIME_OUT_INTERVAL = 2000
 
 packets_flow = {R1_ADDRESS:[], R2_ADDRESS:[], R3_ADDRESS:[]}
 n_packets_flow = {R1_ADDRESS:0, R2_ADDRESS:0, R3_ADDRESS:0}
@@ -103,8 +103,6 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
     global packets_flow
 
     expected_ack = 2
-    timer_running = False
-    bad_ack_time = 99999999999999999
     successful_sent = {R1_ADDRESS:0, R2_ADDRESS:0, R3_ADDRESS:0}
 
     while True:
@@ -125,28 +123,19 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
             with n_packet_mutex:
                 for address in n_packets_flow:
                     n_packets_flow[address] -= successful_sent[address]
+                    packets_flow[address] = []
 
             expected_ack = d_ack + 1
-            timer_running = False
 
             with packet_mutex:
                 packet_index = d_ack
 
         else:
-            if not timer_running:
-                bad_ack_time = int(round(time.time() * 1000))
-                timer_running = True
-            elif int(round(time.time() * 1000)) - bad_ack_time > TIME_OUT_INTERVAL:
-                print("TIMEOUT")
-                with packet_mutex:
-                    packet_index = d_ack
-
-                with n_packet_mutex:
-                    for address in n_packets_flow:
-                        n_packets_flow[address] = 0
-
-                expected_ack = d_ack + 1
-                timer_running = False
+            with n_packet_mutex:
+                for address in n_packets_flow:
+                    n_packets_flow[address] = 0
+                    packets_flow[address] = []
+            expected_ack = d_ack + 1
 
     while True: 
         packet, address = DSocket.recvfrom(1024)
