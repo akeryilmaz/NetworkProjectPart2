@@ -21,16 +21,19 @@ def UDP_RDT_Server(localIP, localPort):
     while not mfinished.val:
         # Listen for incoming packets.
         packet, address = UDPServerSocket.recvfrom(1024)
+        # put the socket,addr pair for ackhandler to use for sending acks
         socket_dict[UDPServerSocket] = address
         started = True
         header = packet[:4]
         current_key = int.from_bytes(header, byteorder="big")
-        # key 0 means thread is finished
+        # key 0 means thread is finished (received fin packet)
         if current_key == 0:
+            # send fin-ack packet
             UDPServerSocket.sendto(current_key.to_bytes(4, byteorder='big'), address)
             mfinished.val = True
         else:
             with mutex:
+                # put the packet into the appropriate location in received packets dictionary for ordering
                 received_packets[current_key] = packet[4:]
 
 def ACKHandler():
@@ -39,11 +42,13 @@ def ACKHandler():
         last_consec = gap_check()
         with mutex:
             for k in socket_dict:
+                # Send ACK packets through each of the connected links.
                 k.sendto(last_consec.to_bytes(4, byteorder='big'), socket_dict[k])
                 #print("sent ACK:", last_consec)
             time.sleep(0.05)
 
 def gap_check():
+    # Compute what ACK number should be sent.
     global received_packets
     last_consec = 1
     mylist = list(received_packets.keys())
