@@ -164,7 +164,3 @@ if __name__ == "__main__":
     t.join()
 
     end = time.time()
-    with open(sys.argv[3],"a") as f:
-        f.write(str(end-start) + "\n")
-    print("Experiment %d is finished in %f" %( i, end-start))
-    time.sleep(5)
