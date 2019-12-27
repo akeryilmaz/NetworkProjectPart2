@@ -152,13 +152,10 @@ if __name__ == "__main__":
     elif experimentNo == "2":
         t1 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R1_ADDRESS))
         t2 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R2_ADDRESS))
-        t3 = threading.Thread(target=UDP_RDT_Sender, args=(UDPClientSocket, R3_ADDRESS))
         t1.start()
         t2.start()
-        t3.start()
         t1.join()
         t2.join()
-        t3.join()
     else:
         raise ("Experiment no is invalid!")
     t.join()
