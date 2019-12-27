@@ -22,7 +22,7 @@ def UDP_RDT_Sender(UDPClientSocket, address):
     global fin_timeout
 
     while not finished:
-        if n_packets_flow[address]>=WINDOW_SIZES[address]:
+        if n_packets_flow[address] >= WINDOW_SIZES[address]:
             continue
         elif packet_index<=len(packets):
             with packet_mutex:
@@ -39,7 +39,7 @@ def UDP_RDT_Sender(UDPClientSocket, address):
     finPacket = fin.to_bytes(4, byteorder='big')
     fin_count = 0
     while not fin_ack_received and fin_count < 100:
-        # Send finish
+        # Send fin
         UDPClientSocket.sendto(finPacket, address)
         fin_count += 1
         time.sleep(0.05)
@@ -66,20 +66,22 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
         packet, address = DSocket.recvfrom(1024)
         d_ack = int.from_bytes(packet, byteorder="big")
         last_ack_received[address] = time.time()
-
+        # Procedure for deciding if the link is down or not.
         for address in down_flag:
             if down_flag[address]:
+                # if the link is down, dont send anything.
                 continue
             if time.time() - last_ack_received[address] > LINK_FAILURE_TIMEOUT:
                 down_flag[address] = True
                 WINDOW_SIZES[address] = 0
                 print(address[0], "is DOWN!!!11!!!!11!")
-
+        # If the last data packet is Acknowledged, break the loop.
         if d_ack == n_packets + 1:
             finished = True
             break
         elif d_ack == prev_ack:
             dup_count += 1
+            # 3 dup acks means that we have to do go-back-n
             if dup_count >= 3:
                 print("dup ack")
                 with n_packet_mutex:
@@ -90,6 +92,7 @@ def UDP_RDT_Listen_Ack(DSocket, n_packets):
                 with packet_mutex:
                     packet_index = d_ack
                 dup_count=0
+        # everything going well, update window sizes for each sender thread.
         elif d_ack >= expected_ack:
             print("good ack:", expected_ack, d_ack)
             max_sent_packet = 0
