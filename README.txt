@@ -51,7 +51,7 @@ Run the following bash commands in the following order:
 3. d: $ python3 d/d_receiver.py 2
 4: s: $ python3 s/s_sender.py 2
 
-After the experiment ends, the scripts running on s and d should be terminated by itself.
+After the experiment ends, the scripts running on s and d should be terminated by themselves.
 Please kill the scripts running on r1 & r2 before moving on to the next experiment by pressing CTRL+C until the scripts stops their execution.
 
 
@@ -71,7 +71,7 @@ Run the following bash commands in the following order:
 3. d: $ python3 d/d_receiver.py 2
 4: s: $ python3 s/s_sender.py 2
 
-After the experiment ends, the scripts running on s and d should be terminated by itself.
+After the experiment ends, the scripts running on s and d should be terminated by themselves.
 Please kill the scripts running on r1 & r2 before moving on to the next experiment by pressing CTRL+C until the scripts stops their execution.
 
 
@@ -91,4 +91,4 @@ Run the following bash commands in the following order:
 3. d: $ python3 d/d_receiver.py 2
 4: s: $ python3 s/s_sender.py 2
 
-After the experiment ends, the scripts running on s and d should be terminated by itself.
+After the experiment ends, the scripts running on s and d should be terminated by themselves.
