@@ -28,7 +28,7 @@ For the first experiment scripts to be run successfully, they must be executed i
 3. $ python3 s/s_sender.py 1
 
 After the experiment ends, the scripts running on s and d should be terminated by itself.
-Please kill the script running on r3 before moving on to the next experiment by pressing CTRL+C until the script stops its execution.
+Please stop the script running on r3 before moving on to the next experiment by pressing CTRL+C until the script stops its execution.
 
 ----- EXPERIMENT 2 -----
 
@@ -52,7 +52,7 @@ Run the following bash commands in the following order:
 4: s: $ python3 s/s_sender.py 2
 
 After the experiment ends, the scripts running on s and d should be terminated by themselves.
-Please kill the scripts running on r1 & r2 before moving on to the next experiment by pressing CTRL+C until the scripts stops their execution.
+Please stop the scripts running on r1 & r2 before moving on to the next experiment by pressing CTRL+C until the scripts stops their execution.
 
 
 -- 15% Packet loss experiment --
@@ -72,7 +72,7 @@ Run the following bash commands in the following order:
 4: s: $ python3 s/s_sender.py 2
 
 After the experiment ends, the scripts running on s and d should be terminated by themselves.
-Please kill the scripts running on r1 & r2 before moving on to the next experiment by pressing CTRL+C until the scripts stops their execution.
+Please stop the scripts running on r1 & r2 before moving on to the next experiment by pressing CTRL+C until the scripts stops their execution.
 
 
 -- 38% Packet loss experiment --
